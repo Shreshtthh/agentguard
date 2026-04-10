@@ -1,0 +1,17 @@
+{
+  "name": "agentguard",
+  "version": "1.0.0",
+  "description": "AI-Powered Security Watchdog for Autonomous Stellar Agents",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "backend": "cd backend && node src/index.js",
+    "dashboard": "cd dashboard && npm run dev",
+    "setup": "cd backend && node demo/setup-accounts.js",
+    "normal-agent": "cd backend && node demo/normal-agent.js",
+    "rogue-agent": "cd backend && node demo/rogue-agent.js",
+    "buy-monitoring": "cd backend && node demo/buy-monitoring.js"
+  },
+  "keywords": ["stellar", "x402", "soroban", "ai", "security", "agents"],
+  "license": "MIT"
+}
