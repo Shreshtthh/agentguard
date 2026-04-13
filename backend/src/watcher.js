@@ -28,8 +28,11 @@ export class WalletWatcher {
       .stream({
         onmessage: (payment) => this._handlePayment(publicKey, payment, config),
         onerror: (err) => {
-          console.error(`[Watcher] Stream error for ${config.name}:`, err?.message || err);
-          // Horizon SSE auto-reconnects, so we just log
+          // Horizon SSE emits empty error events as heartbeats — ignore those
+          const msg = err?.message || err?.reason || "";
+          if (msg) {
+            console.error(`[Watcher] Stream error for ${config.name}:`, msg);
+          }
         },
       });
 
