@@ -52,7 +52,14 @@ async function sendPayment(senderKeypair, destination, amount) {
     return result.hash;
   } catch (err) {
     const resultCodes = err?.response?.data?.extras?.result_codes;
-    console.error(`  Payment failed:`, resultCodes || err.message);
+    if (resultCodes) {
+      console.error(`  Payment failed: ${JSON.stringify(resultCodes)}`);
+    } else {
+      console.error(`  Payment failed: ${err.message || err}`);
+      if (err.response?.data) {
+        console.error(`  Response: ${JSON.stringify(err.response.data).slice(0, 300)}`);
+      }
+    }
     return null;
   }
 }
@@ -68,14 +75,18 @@ async function main() {
   }
 
   const betaKeypair = Keypair.fromSecret(betaSecret);
+  const senderPub = betaKeypair.publicKey();
 
   console.log("==============================================");
   console.log("  ROGUE AGENT -- Agent-Beta COMPROMISED");
   console.log("  Draining wallet to unknown address!");
   console.log("==============================================");
   console.log();
-  console.log(`  Sender:   ${betaKeypair.publicKey().slice(0, 12)}...`);
-  console.log(`  Drain to: ${unknownRecipient.slice(0, 12)}... (NOT whitelisted)`);
+  console.log(`  Sender:   ${senderPub}`);
+  console.log(`  Drain to: ${unknownRecipient} (NOT whitelisted)`);
+  console.log();
+  console.log(`  Verify transactions on Stellar Expert:`);
+  console.log(`  https://stellar.expert/explorer/testnet/account/${senderPub}`);
   console.log();
 
   // Escalating amounts to trigger multiple rules
@@ -97,7 +108,9 @@ async function main() {
 
     const hash = await sendPayment(betaKeypair, unknownRecipient, amount);
     if (hash) {
-      console.log(`TX: ${hash.slice(0, 12)}...`);
+      console.log(`OK`);
+      console.log(`     TX Hash: ${hash}`);
+      console.log(`     View:    https://stellar.expert/explorer/testnet/tx/${hash}`);
     }
     console.log(`     Running total: ${totalSent.toFixed(2)} XLM drained`);
 
@@ -107,13 +120,16 @@ async function main() {
     }
   }
 
-  console.log("\n  =============================================");
-  console.log(`  Attack complete. ${totalSent.toFixed(2)} XLM sent to unknown address.`);
-  console.log("  =============================================");
+  console.log();
+  console.log("  ==============================================");
+  console.log(`  Attack complete. ${totalSent.toFixed(2)} XLM sent to:`);
+  console.log(`  ${unknownRecipient}`);
+  console.log("  ==============================================");
+  console.log();
   console.log("  AgentGuard should have:");
   console.log("    Agent-Beta -> CRITICAL / PAUSED");
   console.log("    AI verdict with risk score 80+");
-  console.log("    Circuit breaker triggered");
+  console.log("    Circuit breaker triggered on-chain");
 }
 
 main().catch(console.error);
