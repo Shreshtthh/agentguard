@@ -3,19 +3,21 @@
  * Adds x402-paywalled endpoints to the Express app.
  * Agents can pay micropayments to check their monitoring status.
  * 
- * NOTE: x402 packages must be installed:
- *   npm install @x402/core @x402/express @x402/stellar
+ * Based on x402-stellar reference implementation:
+ *   - paymentMiddleware from @x402/express
+ *   - ExactStellarScheme from @x402/stellar/exact/server
+ *   - HTTPFacilitatorClient from @x402/core/server
  */
 
 export async function setupX402Routes(app) {
-  let paymentMiddleware;
+  let x402Server;
 
   try {
-    // Dynamic import to avoid crashing if x402 packages not installed
-    const { paymentMiddlewareFromConfig } = await import("@x402/express");
+    const { paymentMiddleware, x402ResourceServer } = await import("@x402/express");
     const { ExactStellarScheme } = await import("@x402/stellar/exact/server");
+    const { HTTPFacilitatorClient } = await import("@x402/core/server");
 
-    const facilitatorUrl = process.env.X402_FACILITATOR_URL || "https://www.x402.org/facilitator";
+    const facilitatorUrl = process.env.X402_FACILITATOR_URL || "https://x402.org/facilitator";
     const guardPublic = process.env.GUARD_PUBLIC;
 
     if (!guardPublic) {
@@ -23,39 +25,45 @@ export async function setupX402Routes(app) {
       return;
     }
 
-    const stellarScheme = new ExactStellarScheme({
-      network: "testnet",
-      rpcUrl: process.env.SOROBAN_RPC_URL || "https://soroban-testnet.stellar.org",
+    // Build facilitator client
+    const facilitatorClient = new HTTPFacilitatorClient({
+      url: facilitatorUrl,
     });
 
-    paymentMiddleware = paymentMiddlewareFromConfig(
-      facilitatorUrl,
-      guardPublic,
-      [stellarScheme]
+    // Build x402 resource server with Stellar scheme
+    x402Server = new x402ResourceServer(facilitatorClient).register(
+      "stellar:testnet",
+      new ExactStellarScheme()
     );
-  } catch (err) {
-    console.warn("[x402] x402 packages not installed — paywall disabled. Install with:");
-    console.warn("       npm install @x402/core @x402/express @x402/stellar");
-    return;
-  }
 
-  // Import state for the endpoints
-  const { getState } = await import("./state.js");
+    // Import state for the endpoints
+    const { getState } = await import("./state.js");
 
-  // ═══════════════════════════════════════════
-  // GET /monitor/status?wallet=G...
-  // Price: $0.01 USDC
-  // Returns monitoring status for a specific wallet
-  // ═══════════════════════════════════════════
-  app.get(
-    "/monitor/status",
-    paymentMiddleware({
-      price: "0.01",
-      asset: "USDC",
-      network: "stellar:testnet",
-      description: "Check monitoring status for a wallet",
-    }),
-    (req, res) => {
+    // GET /monitor/status?wallet=G...
+    // Price: $0.01 USDC
+    const statusMiddleware = paymentMiddleware(
+      {
+        "GET /monitor/status": {
+          accepts: [
+            {
+              scheme: "exact",
+              price: "100000",   // 0.01 USDC in stroops (7 decimals)
+              network: "stellar:testnet",
+              payTo: guardPublic,
+            },
+          ],
+          description: "Check monitoring status for a wallet",
+        },
+      },
+      x402Server,
+      undefined,
+      undefined,
+      true
+    );
+
+    app.use(statusMiddleware);
+
+    app.get("/monitor/status", (req, res) => {
       const wallet = req.query.wallet;
       if (!wallet) {
         return res.status(400).json({ error: "Missing 'wallet' query param" });
@@ -80,33 +88,49 @@ export async function setupX402Routes(app) {
         txCount: w.txCount,
         lastUpdate: Date.now(),
       });
-    }
-  );
+    });
 
-  // ═══════════════════════════════════════════
-  // GET /monitor/alerts
-  // Price: $0.05 USDC
-  // Returns recent security alerts
-  // ═══════════════════════════════════════════
-  app.get(
-    "/monitor/alerts",
-    paymentMiddleware({
-      price: "0.05",
-      asset: "USDC",
-      network: "stellar:testnet",
-      description: "Access recent security alerts feed",
-    }),
-    (req, res) => {
+    // GET /monitor/alerts
+    // Price: $0.05 USDC
+    const alertsMiddleware = paymentMiddleware(
+      {
+        "GET /monitor/alerts": {
+          accepts: [
+            {
+              scheme: "exact",
+              price: "500000",   // 0.05 USDC in stroops (7 decimals)
+              network: "stellar:testnet",
+              payTo: guardPublic,
+            },
+          ],
+          description: "Access recent security alerts feed",
+        },
+      },
+      x402Server,
+      undefined,
+      undefined,
+      true
+    );
+
+    app.use(alertsMiddleware);
+
+    app.get("/monitor/alerts", (req, res) => {
       const state = getState();
       res.json({
         alerts: state.alerts.slice(0, 20),
         systemRisk: state.systemRisk,
         stats: state.stats,
       });
-    }
-  );
+    });
 
-  console.log("[x402] 💰 Paywall endpoints active:");
-  console.log("[x402]    GET /monitor/status?wallet=G... ($0.01 USDC)");
-  console.log("[x402]    GET /monitor/alerts              ($0.05 USDC)");
+    console.log("[x402] Paywall endpoints active:");
+    console.log("[x402]    GET /monitor/status?wallet=G... ($0.01 USDC)");
+    console.log("[x402]    GET /monitor/alerts              ($0.05 USDC)");
+
+  } catch (err) {
+    console.warn(`[x402] Paywall setup failed: ${err.message}`);
+    console.warn("[x402] Paywall disabled. If packages are missing, install with:");
+    console.warn("       npm install @x402/core @x402/express @x402/stellar");
+    return;
+  }
 }
