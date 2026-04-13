@@ -84,11 +84,13 @@ export class SpendingAnalyzer {
 
     // ═══════════════════════════════════════════
     // RULE 5: Rapid Fire (>3 outgoing txns in 60 seconds)
+    // Only suspicious if recipient is NOT whitelisted
     // ═══════════════════════════════════════════
+    const isWhitelisted = config.whitelist && config.whitelist.includes(tx.to);
     const lastMinute = history.filter(
       (t) => t.direction === "outgoing" && t.timestamp > Date.now() - 60_000
     );
-    if (lastMinute.length >= 3) {
+    if (lastMinute.length >= 3 && !isWhitelisted) {
       flags.push({
         rule: "RAPID_FIRE",
         severity: "HIGH",
