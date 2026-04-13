@@ -45,7 +45,11 @@ async function sendPayment(senderKeypair, destination, amount) {
     return result.hash;
   } catch (err) {
     const resultCodes = err?.response?.data?.extras?.result_codes;
-    console.error(`  Payment failed:`, resultCodes || err.message);
+    if (resultCodes) {
+      console.error(`  Payment failed: ${JSON.stringify(resultCodes)}`);
+    } else {
+      console.error(`  Payment failed: ${err.message || err}`);
+    }
     return null;
   }
 }
@@ -61,14 +65,18 @@ async function main() {
   }
 
   const alphaKeypair = Keypair.fromSecret(alphaSecret);
+  const senderPub = alphaKeypair.publicKey();
 
   console.log("==============================================");
   console.log("  Normal Agent -- Agent-Alpha");
   console.log("  Sending small payments to known recipient");
   console.log("==============================================");
   console.log();
-  console.log(`  Sender:    ${alphaKeypair.publicKey().slice(0, 12)}...`);
-  console.log(`  Recipient: ${recipient.slice(0, 12)}... (whitelisted)`);
+  console.log(`  Sender:    ${senderPub}`);
+  console.log(`  Recipient: ${recipient} (whitelisted)`);
+  console.log();
+  console.log(`  Verify transactions on Stellar Expert:`);
+  console.log(`  https://stellar.expert/explorer/testnet/account/${senderPub}`);
   console.log();
 
   const amounts = [0.5, 0.8, 0.3, 0.5, 0.4];
@@ -79,17 +87,22 @@ async function main() {
 
     const hash = await sendPayment(alphaKeypair, recipient, amount);
     if (hash) {
-      console.log(`OK ${hash.slice(0, 12)}...`);
+      console.log(`OK`);
+      console.log(`     TX Hash: ${hash}`);
+      console.log(`     View:    https://stellar.expert/explorer/testnet/tx/${hash}`);
     }
 
     if (i < amounts.length - 1) {
-      process.stdout.write(`  Waiting 8 seconds...\n`);
+      console.log(`     Waiting 8 seconds...\n`);
       await new Promise((r) => setTimeout(r, 8000));
     }
   }
 
-  console.log("\n  Normal agent simulation complete.");
+  console.log();
+  console.log("  ==============================================");
+  console.log("  Normal agent simulation complete.");
   console.log("  AgentGuard should show all-green for Agent-Alpha.");
+  console.log("  ==============================================");
 }
 
 main().catch(console.error);
