@@ -1,0 +1,331 @@
+{
+  "initialState": {
+    "wallets": {
+      "GDEMO_ALPHA_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA": {
+        "name": "Agent-Alpha",
+        "publicKey": "GDEMO_ALPHA_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "status": "ACTIVE",
+        "riskLevel": "LOW",
+        "spentToday": 0,
+        "dailyLimit": 5,
+        "maxTx": 1,
+        "txCount": 0,
+        "txHistory": [],
+        "whitelistSize": 1
+      },
+      "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB": {
+        "name": "Agent-Beta",
+        "publicKey": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "status": "ACTIVE",
+        "riskLevel": "LOW",
+        "spentToday": 0,
+        "dailyLimit": 5,
+        "maxTx": 1,
+        "txCount": 0,
+        "txHistory": [],
+        "whitelistSize": 1
+      },
+      "GDEMO_GAMMA_CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC": {
+        "name": "Agent-Gamma",
+        "publicKey": "GDEMO_GAMMA_CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+        "status": "ACTIVE",
+        "riskLevel": "LOW",
+        "spentToday": 0,
+        "dailyLimit": 10,
+        "maxTx": 2,
+        "txCount": 0,
+        "txHistory": [],
+        "whitelistSize": 1
+      }
+    },
+    "alerts": [],
+    "incidents": [],
+    "systemRisk": "LOW",
+    "stats": { "totalMonitored": 3, "totalBlocked": 0, "totalAllowed": 0, "totalAlerts": 0 }
+  },
+  "timeline": [
+    {
+      "delay": 1500,
+      "type": "state_update",
+      "data": {
+        "wallet": "GDEMO_ALPHA_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "updates": { "spentToday": 0.01, "txCount": 1 }
+      }
+    },
+    {
+      "delay": 2000,
+      "type": "state_update",
+      "data": {
+        "wallet": "GDEMO_ALPHA_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "updates": { "spentToday": 0.03, "txCount": 2 }
+      }
+    },
+    {
+      "delay": 2000,
+      "type": "stat_update",
+      "data": { "totalAllowed": 2 }
+    },
+    {
+      "delay": 2000,
+      "type": "state_update",
+      "data": {
+        "wallet": "GDEMO_ALPHA_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "updates": { "spentToday": 0.06, "txCount": 3 }
+      }
+    },
+    {
+      "delay": 3000,
+      "type": "state_update",
+      "data": {
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "updates": { "spentToday": 0.50, "txCount": 1, "riskLevel": "MEDIUM" }
+      }
+    },
+    {
+      "delay": 500,
+      "type": "alert",
+      "data": {
+        "id": "alert-demo-1",
+        "timestamp": 0,
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "walletName": "Agent-Beta",
+        "severity": "MEDIUM",
+        "rule": "UNKNOWN_RECIPIENT",
+        "detail": "GDEMO_UN...XXXXXX not in whitelist (1 known addresses)"
+      }
+    },
+    {
+      "delay": 500,
+      "type": "system_risk",
+      "data": { "systemRisk": "MEDIUM" }
+    },
+    {
+      "delay": 3000,
+      "type": "state_update",
+      "data": {
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "updates": { "spentToday": 1.50, "txCount": 2, "riskLevel": "HIGH" }
+      }
+    },
+    {
+      "delay": 500,
+      "type": "alert",
+      "data": {
+        "id": "alert-demo-2",
+        "timestamp": 0,
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "walletName": "Agent-Beta",
+        "severity": "HIGH",
+        "rule": "TX_LIMIT_EXCEEDED",
+        "detail": "$1.00 exceeds per-transaction max of $1.00"
+      }
+    },
+    {
+      "delay": 500,
+      "type": "alert",
+      "data": {
+        "id": "alert-demo-3",
+        "timestamp": 0,
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "walletName": "Agent-Beta",
+        "severity": "MEDIUM",
+        "rule": "UNKNOWN_RECIPIENT",
+        "detail": "GDEMO_UN...XXXXXX not in whitelist (1 known addresses)"
+      }
+    },
+    {
+      "delay": 1000,
+      "type": "incident",
+      "data": {
+        "id": "incident-demo-1",
+        "timestamp": 0,
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "walletName": "Agent-Beta",
+        "flags": [
+          { "rule": "UNKNOWN_RECIPIENT", "severity": "MEDIUM", "detail": "Unknown address" },
+          { "rule": "TX_LIMIT_EXCEEDED", "severity": "HIGH", "detail": "$1.00 exceeds max $1.00" }
+        ],
+        "aiVerdict": {
+          "risk_score": 65,
+          "risk_level": "HIGH",
+          "reason": "Transaction to unknown recipient exceeding per-tx limit suggests potential unauthorized activity. The spending pattern is concerning but not yet at budget threshold.",
+          "recommended_action": "FLAG",
+          "inference_time_ms": 142,
+          "model": "llama-3.3-70b-versatile"
+        },
+        "action": "FLAG",
+        "tx": {
+          "amount": 1.00,
+          "asset": "USDC",
+          "to": "GDEMO_UNKNOWN_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+          "hash": "abc123demo456hash789example000111222333444555666777888999aaa"
+        }
+      }
+    },
+    {
+      "delay": 500,
+      "type": "system_risk",
+      "data": { "systemRisk": "HIGH" }
+    },
+    {
+      "delay": 3000,
+      "type": "state_update",
+      "data": {
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "updates": { "spentToday": 3.50, "txCount": 3, "riskLevel": "HIGH", "status": "WARNED" }
+      }
+    },
+    {
+      "delay": 500,
+      "type": "alert",
+      "data": {
+        "id": "alert-demo-4",
+        "timestamp": 0,
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "walletName": "Agent-Beta",
+        "severity": "HIGH",
+        "rule": "SPENDING_SPIKE",
+        "detail": "$2.00 is 3.3x the recent average ($0.60)"
+      }
+    },
+    {
+      "delay": 500,
+      "type": "alert",
+      "data": {
+        "id": "alert-demo-5",
+        "timestamp": 0,
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "walletName": "Agent-Beta",
+        "severity": "HIGH",
+        "rule": "TX_LIMIT_EXCEEDED",
+        "detail": "$2.00 exceeds per-transaction max of $1.00"
+      }
+    },
+    {
+      "delay": 500,
+      "type": "alert",
+      "data": {
+        "id": "alert-demo-5b",
+        "timestamp": 0,
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "walletName": "Agent-Beta",
+        "severity": "HIGH",
+        "rule": "RAPID_FIRE",
+        "detail": "3 outgoing transactions in the last 60 seconds"
+      }
+    },
+    {
+      "delay": 3000,
+      "type": "state_update",
+      "data": {
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "updates": { "spentToday": 6.50, "txCount": 4, "riskLevel": "CRITICAL", "status": "CRITICAL" }
+      }
+    },
+    {
+      "delay": 500,
+      "type": "alert",
+      "data": {
+        "id": "alert-demo-6",
+        "timestamp": 0,
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "walletName": "Agent-Beta",
+        "severity": "CRITICAL",
+        "rule": "BUDGET_EXCEEDED",
+        "detail": "$6.50 spent today exceeds daily limit of $5.00"
+      }
+    },
+    {
+      "delay": 1000,
+      "type": "incident",
+      "data": {
+        "id": "incident-demo-2",
+        "timestamp": 0,
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "walletName": "Agent-Beta",
+        "flags": [
+          { "rule": "UNKNOWN_RECIPIENT", "severity": "MEDIUM", "detail": "Unknown address" },
+          { "rule": "SPENDING_SPIKE", "severity": "HIGH", "detail": "$3.00 is 4.3x average" },
+          { "rule": "BUDGET_EXCEEDED", "severity": "CRITICAL", "detail": "Exceeds $5 daily limit" },
+          { "rule": "TX_LIMIT_EXCEEDED", "severity": "HIGH", "detail": "$3.00 exceeds max $1.00" },
+          { "rule": "RAPID_FIRE", "severity": "HIGH", "detail": "4 txns in 60 seconds" }
+        ],
+        "aiVerdict": {
+          "risk_score": 95,
+          "risk_level": "CRITICAL",
+          "reason": "Multiple critical violations detected simultaneously: budget exceeded, rapid-fire transactions to unknown address, escalating amounts. This pattern is consistent with a wallet drain attack by a compromised agent.",
+          "recommended_action": "BLOCK",
+          "inference_time_ms": 189,
+          "model": "llama-3.3-70b-versatile"
+        },
+        "action": "BLOCK",
+        "tx": {
+          "amount": 3.00,
+          "asset": "USDC",
+          "to": "GDEMO_UNKNOWN_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+          "hash": "def456demo789hash012example333444555666777888999aaabbbccc111"
+        }
+      }
+    },
+    {
+      "delay": 1000,
+      "type": "alert",
+      "data": {
+        "id": "alert-demo-7",
+        "timestamp": 0,
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "walletName": "Agent-Beta",
+        "severity": "CRITICAL",
+        "rule": "AI_VERDICT",
+        "detail": "Score: 95/100 — Wallet drain attack detected. Multiple critical violations: budget exceeded, rapid-fire to unknown address."
+      }
+    },
+    {
+      "delay": 1500,
+      "type": "alert",
+      "data": {
+        "id": "alert-demo-8",
+        "timestamp": 0,
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "walletName": "Agent-Beta",
+        "severity": "CRITICAL",
+        "rule": "CIRCUIT_BREAKER",
+        "detail": "⛔ Agent-Beta PAUSED on-chain by Soroban SpendingPolicy contract"
+      }
+    },
+    {
+      "delay": 500,
+      "type": "state_update",
+      "data": {
+        "wallet": "GDEMO_BETA_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+        "updates": { "status": "PAUSED", "riskLevel": "CRITICAL" }
+      }
+    },
+    {
+      "delay": 500,
+      "type": "system_risk",
+      "data": { "systemRisk": "CRITICAL" }
+    },
+    {
+      "delay": 500,
+      "type": "stat_update",
+      "data": { "totalBlocked": 1, "totalAlerts": 8, "totalAllowed": 5 }
+    },
+    {
+      "delay": 3000,
+      "type": "state_update",
+      "data": {
+        "wallet": "GDEMO_ALPHA_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "updates": { "spentToday": 0.07, "txCount": 4 }
+      }
+    },
+    {
+      "delay": 2000,
+      "type": "state_update",
+      "data": {
+        "wallet": "GDEMO_ALPHA_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "updates": { "spentToday": 0.12, "txCount": 5 }
+      }
+    }
+  ]
+}
